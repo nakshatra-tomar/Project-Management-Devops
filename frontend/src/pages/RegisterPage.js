@@ -1,23 +1,25 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const history = useHistory();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        { email, password }
-      );
-      login(response.data);
-      history.push("/");
+      await axios.post("http://localhost:8080/api/auth/register", {
+        email,
+        password,
+      });
+      history.push("/login");
     } catch (error) {
       console.error(error);
     }
@@ -25,7 +27,7 @@ const LoginPage = () => {
 
   return (
     <div>
-      <h2>Login</h2>
+      <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -39,10 +41,16 @@ const LoginPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">Login</button>
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+        <button type="submit">Register</button>
       </form>
     </div>
   );
 };
 
-export default LoginPage;
+export default RegisterPage;
