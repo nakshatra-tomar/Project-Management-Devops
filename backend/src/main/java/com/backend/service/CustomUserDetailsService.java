@@ -4,16 +4,14 @@ import com.backend.model.User;
 import com.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.springframework.security.core.userdetails.User.UserBuilder;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -22,10 +20,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        Set<GrantedAuthority> grantedAuthorities = user.getRoles().stream()
-                .map(role -> (GrantedAuthority) role)
-                .collect(Collectors.toSet());
+        UserBuilder builder = org.springframework.security.core.userdetails.User.withUsername(user.getEmail());
+        builder.password(user.getPassword());
+        builder.roles(user.getRoles().stream().map(role -> role.getName().name()).toArray(String[]::new));
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), grantedAuthorities);
+        return builder.build();
     }
 }
